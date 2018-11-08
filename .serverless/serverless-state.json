@@ -1,0 +1,370 @@
+{
+  "service": {
+    "service": "serverless-node-cron",
+    "serviceObject": {
+      "name": "serverless-node-cron"
+    },
+    "provider": {
+      "stage": "dev",
+      "region": "us-east-1",
+      "variableSyntax": "\\${([ ~:a-zA-Z0-9._'\",\\-\\/\\(\\)]+?)}",
+      "name": "aws",
+      "runtime": "nodejs6.10",
+      "iamRoleStatements": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "ses:*"
+          ],
+          "Resource": [
+            "*"
+          ]
+        }
+      ],
+      "versionFunctions": true,
+      "remoteFunctionData": null,
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "ServerlessDeploymentBucket": {
+            "Type": "AWS::S3::Bucket"
+          },
+          "DailyReminderLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/serverless-node-cron-dev-dailyReminder"
+            }
+          },
+          "WeekendReminderLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/serverless-node-cron-dev-weekendReminder"
+            }
+          },
+          "IamRoleLambdaExecution": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "lambda.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": {
+                    "Fn::Join": [
+                      "-",
+                      [
+                        "dev",
+                        "serverless-node-cron",
+                        "lambda"
+                      ]
+                    ]
+                  },
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:CreateLogStream"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/serverless-node-cron-dev-dailyReminder:*"
+                          },
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/serverless-node-cron-dev-weekendReminder:*"
+                          }
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:PutLogEvents"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/serverless-node-cron-dev-dailyReminder:*:*"
+                          },
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/serverless-node-cron-dev-weekendReminder:*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "$ref": "$[\"service\"][\"provider\"][\"iamRoleStatements\"][0]"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "Path": "/",
+              "RoleName": {
+                "Fn::Join": [
+                  "-",
+                  [
+                    "serverless-node-cron",
+                    "dev",
+                    "us-east-1",
+                    "lambdaRole"
+                  ]
+                ]
+              }
+            }
+          },
+          "DailyReminderLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/serverless-node-cron/dev/1541667317529-2018-11-08T08:55:17.529Z/serverless-node-cron.zip"
+              },
+              "FunctionName": "serverless-node-cron-dev-dailyReminder",
+              "Handler": "handler.sendReminderDaily",
+              "MemorySize": 1024,
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Runtime": "nodejs6.10",
+              "Timeout": 6
+            },
+            "DependsOn": [
+              "DailyReminderLogGroup",
+              "IamRoleLambdaExecution"
+            ]
+          },
+          "DailyReminderLambdaVersione6ZeHk2cBKiUaTW3bH48wQzoa6h4l6sTZOJocITbQ": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "DailyReminderLambdaFunction"
+              },
+              "CodeSha256": "Cl2HGhlLFdrKbNkr6+sJmcNP6DQCmsLWPt7IANNoGYU="
+            }
+          },
+          "WeekendReminderLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/serverless-node-cron/dev/1541667317529-2018-11-08T08:55:17.529Z/serverless-node-cron.zip"
+              },
+              "FunctionName": "serverless-node-cron-dev-weekendReminder",
+              "Handler": "handler.sendReminderWeekend",
+              "MemorySize": 1024,
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Runtime": "nodejs6.10",
+              "Timeout": 6
+            },
+            "DependsOn": [
+              "WeekendReminderLogGroup",
+              "IamRoleLambdaExecution"
+            ]
+          },
+          "WeekendReminderLambdaVersioniawTNOn5PeuPAYvF3Wt2KYChK3fTnyxyFHbos8": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "WeekendReminderLambdaFunction"
+              },
+              "CodeSha256": "Cl2HGhlLFdrKbNkr6+sJmcNP6DQCmsLWPt7IANNoGYU="
+            }
+          },
+          "DailyReminderEventsRuleSchedule1": {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+              "ScheduleExpression": "rate(1 day)",
+              "State": "ENABLED",
+              "Targets": [
+                {
+                  "Arn": {
+                    "Fn::GetAtt": [
+                      "DailyReminderLambdaFunction",
+                      "Arn"
+                    ]
+                  },
+                  "Id": "dailyReminderSchedule"
+                }
+              ]
+            }
+          },
+          "DailyReminderLambdaPermissionEventsRuleSchedule1": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "DailyReminderLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "events.",
+                    {
+                      "Ref": "AWS::URLSuffix"
+                    }
+                  ]
+                ]
+              },
+              "SourceArn": {
+                "Fn::GetAtt": [
+                  "DailyReminderEventsRuleSchedule1",
+                  "Arn"
+                ]
+              }
+            }
+          },
+          "WeekendReminderEventsRuleSchedule1": {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+              "ScheduleExpression": "cron(30 22 ? * SUN,SAT *)",
+              "State": "ENABLED",
+              "Targets": [
+                {
+                  "Arn": {
+                    "Fn::GetAtt": [
+                      "WeekendReminderLambdaFunction",
+                      "Arn"
+                    ]
+                  },
+                  "Id": "weekendReminderSchedule"
+                }
+              ]
+            }
+          },
+          "WeekendReminderLambdaPermissionEventsRuleSchedule1": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "WeekendReminderLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "events.",
+                    {
+                      "Ref": "AWS::URLSuffix"
+                    }
+                  ]
+                ]
+              },
+              "SourceArn": {
+                "Fn::GetAtt": [
+                  "WeekendReminderEventsRuleSchedule1",
+                  "Arn"
+                ]
+              }
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": {
+              "Ref": "ServerlessDeploymentBucket"
+            }
+          },
+          "DailyReminderLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "DailyReminderLambdaVersione6ZeHk2cBKiUaTW3bH48wQzoa6h4l6sTZOJocITbQ"
+            }
+          },
+          "WeekendReminderLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "WeekendReminderLambdaVersioniawTNOn5PeuPAYvF3Wt2KYChK3fTnyxyFHbos8"
+            }
+          }
+        }
+      },
+      "coreCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "ServerlessDeploymentBucket": {
+            "Type": "AWS::S3::Bucket"
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": {
+              "Ref": "ServerlessDeploymentBucket"
+            }
+          }
+        }
+      },
+      "vpc": {}
+    },
+    "pluginsData": {},
+    "functions": {
+      "dailyReminder": {
+        "handler": "handler.sendReminderDaily",
+        "events": [
+          {
+            "schedule": "rate(1 day)"
+          }
+        ],
+        "name": "serverless-node-cron-dev-dailyReminder",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs6.10",
+        "vpc": {}
+      },
+      "weekendReminder": {
+        "handler": "handler.sendReminderWeekend",
+        "events": [
+          {
+            "schedule": "cron(30 22 ? * SUN,SAT *)"
+          }
+        ],
+        "name": "serverless-node-cron-dev-weekendReminder",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs6.10",
+        "vpc": {}
+      }
+    },
+    "artifact": "C:\\projects\\serverless\\serverless-reminders\\.serverless\\serverless-node-cron.zip"
+  },
+  "package": {
+    "artifactDirectoryName": "serverless/serverless-node-cron/dev/1541667317529-2018-11-08T08:55:17.529Z",
+    "artifact": "serverless-node-cron.zip"
+  }
+}
